@@ -166,13 +166,20 @@ function obj:bindHotkeys(mapping)
 
   hs.hotkey.bind(mapping.down[1], mapping.down[2], function ()
     self._pressed.down = true
-    if self._pressed.up then 
-      self:_fullDimension('h')
-    else
+    if self._pressed.right or self._pressed.left then
       self:_nextStep('h', true, function (cell, nextSize)
         cell.y = self.GRID.h - self.GRID.h / nextSize
         cell.h = self.GRID.h / nextSize
       end)
+    else
+      local win = hs.window.focusedWindow()
+      local nextScreen = win:screen():next()
+      if win:frame().w > nextScreen:frame().w then
+        local f = win:frame()
+        f.w = nextScreen:frame().w
+        win:setFrame(f)
+      end
+      win:moveToScreen(win:screen():next(), true)
     end
   end, function () 
     self._pressed.down = false
@@ -183,6 +190,7 @@ function obj:bindHotkeys(mapping)
     if self._pressed.left then 
       self:_fullDimension('w')
     else
+      self:_fullDimension('h')
       self:_nextStep('w', true, function (cell, nextSize)
         cell.x = self.GRID.w - self.GRID.w / nextSize
         cell.w = self.GRID.w / nextSize
@@ -197,6 +205,7 @@ function obj:bindHotkeys(mapping)
     if self._pressed.right then 
       self:_fullDimension('w')
     else
+      self:_fullDimension('h')
       self:_nextStep('w', false, function (cell, nextSize)
         cell.x = 0
         cell.w = self.GRID.w / nextSize
@@ -208,20 +217,16 @@ function obj:bindHotkeys(mapping)
 
   hs.hotkey.bind(mapping.up[1], mapping.up[2], function ()
     self._pressed.up = true
-    if self._pressed.down then 
-        self:_fullDimension('h')
-    else
+    if self._pressed.right or self._pressed.left then
       self:_nextStep('h', false, function (cell, nextSize)
         cell.y = 0
         cell.h = self.GRID.h / nextSize
       end)
+    else
+      self:_nextFullScreenStep()
     end
   end, function () 
     self._pressed.up = false
-  end)
-
-  hs.hotkey.bind(mapping.fullscreen[1], mapping.fullscreen[2], function ()
-    self:_nextFullScreenStep()
   end)
 
 end
